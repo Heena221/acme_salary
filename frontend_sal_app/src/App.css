@@ -70,3 +70,25 @@ body {
 .page-content {
   padding: 30px;
 }
+.sidebar-link {
+  display: block;
+  color: white;
+  text-decoration: none;
+  width: 100%;
+}
+
+.sidebar-link:hover {
+  color: white;
+}
+
+.sidebar-menu li:has(.sidebar-link.active) {
+  background-color: #0d6efd;
+}
+
+.table thead input {
+  min-width: 80px;
+}
+
+.table thead th {
+  vertical-align: middle;
+}
