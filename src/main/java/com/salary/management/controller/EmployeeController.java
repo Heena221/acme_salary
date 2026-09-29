@@ -1,10 +1,12 @@
 package com.salary.management.controller;
 
 import com.salary.management.entity.Employee;
+import com.salary.management.util.ExcelHelper;
 import com.salary.management.service.EmployeeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
@@ -63,5 +65,41 @@ public class EmployeeController {
         employeeService.deleteEmployee(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    //Excel upload
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadEmployees(
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+
+            if (file.isEmpty()) {
+                return ResponseEntity
+                        .badRequest()
+                        .body("Please select an Excel file.");
+            }
+
+            List<Employee> employees =
+                    ExcelHelper.excelToEmployees(
+                            file.getInputStream()
+                    );
+
+            employeeService.saveEmployees(employees);
+
+            return ResponseEntity.ok(
+                    employees.size()
+                            + " employees uploaded successfully."
+            );
+
+        } catch (Exception e) {
+
+            return ResponseEntity
+                    .internalServerError()
+                    .body(
+                            "Failed to upload employees: "
+                                    + e.getMessage()
+                    );
+        }
     }
 }

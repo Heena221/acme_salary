@@ -52,4 +52,11 @@ public class EmployeeService {
     public void deleteEmployee(Long id) {
         employeeRepository.deleteById(id);
     }
+
+    //Excel
+    public List<Employee> saveEmployees(
+            List<Employee> employees) {
+
+        return employeeRepository.saveAll(employees);
+    }
 }
