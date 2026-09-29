@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Employees from "./pages/Employees";
 import AddEmployee from "./pages/AddEmployee";
 import EditEmployee from "./pages/EditEmployee.jsx";
+import Reports from "./pages/Reports.jsx";
 
 function App() {
   return (
@@ -38,6 +39,10 @@ function App() {
                     <Route
                         path="/employees/edit/:id"
                         element={<EditEmployee />}
+                    />
+                    <Route
+                        path="/reports"
+                        element={<Reports />}
                     />
 
                 </Routes>

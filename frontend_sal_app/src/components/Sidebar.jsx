@@ -29,9 +29,12 @@ function Sidebar() {
                 </li>
 
                 <li>
-          <span className="sidebar-link">
-            📄 Reports
-          </span>
+                    <NavLink
+                        to="/reports"
+                        className="sidebar-link"
+                    >
+                        📄 Reports
+                    </NavLink>
                 </li>
 
             </ul>
