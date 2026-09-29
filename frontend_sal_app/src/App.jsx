@@ -7,6 +7,8 @@ import Employees from "./pages/Employees";
 import AddEmployee from "./pages/AddEmployee";
 import EditEmployee from "./pages/EditEmployee.jsx";
 import Reports from "./pages/Reports.jsx";
+import Login from "./pages/Login.jsx";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -23,27 +25,53 @@ function App() {
 
                     <Route
                         path="/"
-                        element={<Dashboard />}
+                        element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        }
                     />
 
                     <Route
                         path="/employees"
-                        element={<Employees />}
+                        element={
+                            <ProtectedRoute>
+                                <Employees />
+                            </ProtectedRoute>
+                        }
                     />
 
                     <Route
                         path="/employees/add"
-                        element={<AddEmployee />}
+                        element={
+                            <ProtectedRoute>
+                                <AddEmployee />
+                            </ProtectedRoute>
+                        }
                     />
 
                     <Route
                         path="/employees/edit/:id"
-                        element={<EditEmployee />}
+                        element={
+                            <ProtectedRoute>
+                                <EditEmployee />
+                            </ProtectedRoute>
+                        }
                     />
+
                     <Route
                         path="/reports"
-                        element={<Reports />}
+                        element={
+                            <ProtectedRoute>
+                                <Reports />
+                            </ProtectedRoute>
+                        }
                     />
+                    <Route
+                        path="/login"
+                        element={<Login />}
+                    />
+
 
                 </Routes>
             </div>
