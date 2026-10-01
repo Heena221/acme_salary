@@ -1,43 +1,67 @@
-import React from "react";
-import {NavLink} from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 function Sidebar() {
+
+    const getLinkClass = ({ isActive }) =>
+        `sidebar-link ${isActive ? "active" : ""}`;
+
     return (
         <div className="sidebar">
-            <h4 className="sidebar-title">Salary Manager</h4>
 
-            <ul className="sidebar-menu">
-                <li>
-                    <NavLink to="/" className="sidebar-link">
-                        📊 Dashboard
-                    </NavLink>
-                </li>
+            <div className="sidebar-brand">
+                <div className="brand-icon">₹</div>
 
-                <li>
-                    <NavLink to="/employees" className="sidebar-link">
-                        👥 Employees
-                    </NavLink>
-                </li>
+                <div>
+                    <h5>Salary Manager</h5>
+                    <small>Employee Portal</small>
+                </div>
+            </div>
 
-                <li>
-                    <NavLink
-                        to="/employees/add"
-                        className="sidebar-link"
-                    >
-                        ➕ Add Employee
-                    </NavLink>
-                </li>
+            <div className="sidebar-menu">
 
-                <li>
-                    <NavLink
-                        to="/reports"
-                        className="sidebar-link"
-                    >
-                        📄 Reports
-                    </NavLink>
-                </li>
+                <p className="sidebar-title">
+                    MAIN MENU
+                </p>
 
-            </ul>
+                <NavLink
+                    to="/"
+                    end
+                    className={getLinkClass}
+                >
+                    <span>📊</span>
+                    Dashboard
+                </NavLink>
+
+                <NavLink
+                    to="/employees"
+                    className={getLinkClass}
+                >
+                    <span>👥</span>
+                    Employees
+                </NavLink>
+
+                <NavLink
+                    to="/employees/add"
+                    className={getLinkClass}
+                >
+                    <span>➕</span>
+                    Add Employee
+                </NavLink>
+
+                <NavLink
+                    to="/reports"
+                    className={getLinkClass}
+                >
+                    <span>📄</span>
+                    Reports
+                </NavLink>
+
+            </div>
+
+            <div className="sidebar-footer">
+                <small>Salary Management System</small>
+            </div>
+
         </div>
     );
 }

@@ -9,6 +9,7 @@ import EditEmployee from "./pages/EditEmployee.jsx";
 import Reports from "./pages/Reports.jsx";
 import Login from "./pages/Login.jsx";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AppLayout from "./components/AppLayout.jsx";
 
 function App() {
   return (
@@ -23,55 +24,50 @@ function App() {
             <div className="page-content">
                 <Routes>
 
-                    <Route
-                        path="/"
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        }
-                    />
+                    {/* PUBLIC ROUTE */}
 
-                    <Route
-                        path="/employees"
-                        element={
-                            <ProtectedRoute>
-                                <Employees />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/employees/add"
-                        element={
-                            <ProtectedRoute>
-                                <AddEmployee />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/employees/edit/:id"
-                        element={
-                            <ProtectedRoute>
-                                <EditEmployee />
-                            </ProtectedRoute>
-                        }
-                    />
-
-                    <Route
-                        path="/reports"
-                        element={
-                            <ProtectedRoute>
-                                <Reports />
-                            </ProtectedRoute>
-                        }
-                    />
                     <Route
                         path="/login"
                         element={<Login />}
                     />
 
+
+                    {/* PROTECTED APPLICATION */}
+
+                    <Route
+                        element={
+                            <ProtectedRoute>
+                                <AppLayout />
+                            </ProtectedRoute>
+                        }
+                    >
+
+                        <Route
+                            path="/"
+                            element={<Dashboard />}
+                        />
+
+                        <Route
+                            path="/employees"
+                            element={<Employees />}
+                        />
+
+                        <Route
+                            path="/employees/add"
+                            element={<AddEmployee />}
+                        />
+
+                        <Route
+                            path="/employees/edit/:id"
+                            element={<EditEmployee />}
+                        />
+
+                        <Route
+                            path="/reports"
+                            element={<Reports />}
+                        />
+
+                    </Route>
 
                 </Routes>
             </div>

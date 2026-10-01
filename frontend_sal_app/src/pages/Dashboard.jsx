@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import EmployeeService from "../services/EmployeeService";
+
 import {
     BarChart,
     Bar,
     XAxis,
     YAxis,
+    CartesianGrid,
     Tooltip,
     ResponsiveContainer,
     PieChart,
@@ -11,8 +14,6 @@ import {
     Cell,
     Legend
 } from "recharts";
-
-import EmployeeService from "../services/EmployeeService";
 
 function Dashboard() {
 
@@ -32,48 +33,52 @@ function Dashboard() {
             .catch((error) => {
 
                 console.error(
-                    "Error loading dashboard data:",
+                    "Error fetching dashboard data:",
                     error
                 );
 
-                setError("Unable to load dashboard data.");
+                setError(
+                    "Unable to load dashboard data."
+                );
+
                 setLoading(false);
 
             });
 
     }, []);
 
-    if (loading) {
-        return <p>Loading dashboard...</p>;
-    }
 
-    if (error) {
-        return (
-            <div className="alert alert-danger">
-                {error}
-            </div>
-        );
-    }
-
-    // -------------------------
-    // Dashboard Statistics
-    // -------------------------
+    // --------------------------------------------------
+    // KPI STATISTICS
+    // --------------------------------------------------
 
     const totalEmployees = employees.length;
 
-    const departments = [
-        ...new Set(
+    const totalDepartments =
+        new Set(
             employees
-                .map((employee) => employee.department)
+                .map(employee => employee.department)
                 .filter(Boolean)
-        )
-    ];
+        ).size;
 
-    const totalDepartments = departments.length;
+    const totalCountries =
+        new Set(
+            employees
+                .map(employee => employee.country)
+                .filter(Boolean)
+        ).size;
 
-    // -------------------------
-    // Employees by Department
-    // -------------------------
+    const totalCurrencies =
+        new Set(
+            employees
+                .map(employee => employee.currency)
+                .filter(Boolean)
+        ).size;
+
+
+    // --------------------------------------------------
+    // DEPARTMENT CHART DATA
+    // --------------------------------------------------
 
     const departmentCounts = {};
 
@@ -88,16 +93,16 @@ function Dashboard() {
     });
 
     const departmentData =
-        Object.entries(departmentCounts).map(
-            ([department, count]) => ({
+        Object.entries(departmentCounts)
+            .map(([department, count]) => ({
                 department,
                 employees: count
-            })
-        );
+            }));
 
-    // -------------------------
-    // Employees by Country
-    // -------------------------
+
+    // --------------------------------------------------
+    // COUNTRY CHART DATA
+    // --------------------------------------------------
 
     const countryCounts = {};
 
@@ -112,113 +117,213 @@ function Dashboard() {
     });
 
     const countryData =
-        Object.entries(countryCounts).map(
-            ([country, count]) => ({
-                name: country,
-                value: count
-            })
+        Object.entries(countryCounts)
+            .map(([country, count]) => ({
+                country,
+                employees: count
+            }));
+
+
+    // Pie chart colors
+    const COLORS = [
+        "#0d6efd",
+        "#198754",
+        "#ffc107",
+        "#dc3545",
+        "#6f42c1",
+        "#0dcaf0",
+        "#fd7e14",
+        "#20c997"
+    ];
+
+
+    // --------------------------------------------------
+    // LOADING
+    // --------------------------------------------------
+
+    if (loading) {
+
+        return (
+            <div className="text-center py-5">
+
+                <div
+                    className="spinner-border text-primary"
+                    role="status"
+                >
+                    <span className="visually-hidden">
+                        Loading...
+                    </span>
+                </div>
+
+                <p className="text-muted mt-3">
+                    Loading dashboard...
+                </p>
+
+            </div>
         );
+    }
 
-    // -------------------------
-    // Salary grouped by currency
-    // -------------------------
 
-    const salaryByCurrency = {};
+    // --------------------------------------------------
+    // ERROR
+    // --------------------------------------------------
 
-    employees.forEach((employee) => {
+    if (error) {
 
-        const currency =
-            employee.currency || "Unknown";
+        return (
+            <div className="alert alert-danger">
+                {error}
+            </div>
+        );
+    }
 
-        const salary =
-            Number(employee.salary) || 0;
 
-        if (!salaryByCurrency[currency]) {
-
-            salaryByCurrency[currency] = {
-                total: 0,
-                count: 0
-            };
-
-        }
-
-        salaryByCurrency[currency].total += salary;
-        salaryByCurrency[currency].count += 1;
-
-    });
+    // --------------------------------------------------
+    // DASHBOARD
+    // --------------------------------------------------
 
     return (
+
         <div>
 
-            <h2 className="mb-4">
-                Dashboard
-            </h2>
+            {/* PAGE HEADER */}
 
-            {/* Statistics */}
+            <div className="mb-4">
+
+                <h2 className="mb-1">
+                    Dashboard
+                </h2>
+
+                <p className="text-muted mb-0">
+                    Overview of your employee and salary
+                    management system
+                </p>
+
+            </div>
+
+
+            {/* KPI CARDS */}
 
             <div className="row g-4 mb-4">
 
-                <div className="col-md-4">
 
-                    <div className="card shadow-sm border-0 h-100">
+                {/* TOTAL EMPLOYEES */}
 
-                        <div className="card-body">
+                <div className="col-md-6 col-xl-3">
 
-                            <h6 className="text-muted">
+                    <div className="dashboard-card">
+
+                        <div>
+
+                            <p>
                                 Total Employees
-                            </h6>
+                            </p>
 
                             <h2>
                                 {totalEmployees}
                             </h2>
 
+                            <small>
+                                Active employee records
+                            </small>
+
+                        </div>
+
+                        <div className="dashboard-icon">
+                            👥
                         </div>
 
                     </div>
 
                 </div>
 
-                <div className="col-md-4">
 
-                    <div className="card shadow-sm border-0 h-100">
+                {/* DEPARTMENTS */}
 
-                        <div className="card-body">
+                <div className="col-md-6 col-xl-3">
 
-                            <h6 className="text-muted">
+                    <div className="dashboard-card">
+
+                        <div>
+
+                            <p>
                                 Departments
-                            </h6>
+                            </p>
 
                             <h2>
                                 {totalDepartments}
                             </h2>
 
+                            <small>
+                                Across organization
+                            </small>
+
+                        </div>
+
+                        <div className="dashboard-icon">
+                            🏢
                         </div>
 
                     </div>
 
                 </div>
 
-                <div className="col-md-4">
 
-                    <div className="card shadow-sm border-0 h-100">
+                {/* COUNTRIES */}
 
-                        <div className="card-body">
+                <div className="col-md-6 col-xl-3">
 
-                            <h6 className="text-muted">
+                    <div className="dashboard-card">
+
+                        <div>
+
+                            <p>
                                 Countries
-                            </h6>
+                            </p>
 
                             <h2>
-                                {
-                                    new Set(
-                                        employees.map(
-                                            (employee) =>
-                                                employee.country
-                                        )
-                                    ).size
-                                }
+                                {totalCountries}
                             </h2>
 
+                            <small>
+                                Employee locations
+                            </small>
+
+                        </div>
+
+                        <div className="dashboard-icon">
+                            🌍
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {/* CURRENCIES */}
+
+                <div className="col-md-6 col-xl-3">
+
+                    <div className="dashboard-card">
+
+                        <div>
+
+                            <p>
+                                Currencies
+                            </p>
+
+                            <h2>
+                                {totalCurrencies}
+                            </h2>
+
+                            <small>
+                                Salary currencies
+                            </small>
+
+                        </div>
+
+                        <div className="dashboard-icon">
+                            💰
                         </div>
 
                     </div>
@@ -227,85 +332,58 @@ function Dashboard() {
 
             </div>
 
-            {/* Salary Statistics */}
 
-            <div className="card shadow-sm border-0 mb-4">
-
-                <div className="card-body">
-
-                    <h5 className="mb-3">
-                        Salary Summary
-                    </h5>
-
-                    <div className="row">
-
-                        {Object.entries(
-                            salaryByCurrency
-                        ).map(([currency, data]) => (
-
-                            <div
-                                className="col-md-3 mb-3"
-                                key={currency}
-                            >
-
-                                <div className="border rounded p-3">
-
-                                    <h6>
-                                        {currency}
-                                    </h6>
-
-                                    <div>
-                                        <strong>Total:</strong>{" "}
-                                        {data.total.toLocaleString()}
-                                    </div>
-
-                                    <div>
-                                        <strong>Average:</strong>{" "}
-                                        {Math.round(
-                                            data.total / data.count
-                                        ).toLocaleString()}
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        ))}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* Charts */}
+            {/* CHARTS */}
 
             <div className="row g-4">
 
-                {/* Department Chart */}
+
+                {/* DEPARTMENT BAR CHART */}
 
                 <div className="col-lg-7">
 
-                    <div className="card shadow-sm border-0">
+                    <div className="chart-card">
 
-                        <div className="card-body">
+                        <div className="chart-header">
 
-                            <h5 className="mb-4">
+                            <h5>
                                 Employees by Department
                             </h5>
 
-                            <div
-                                style={{
-                                    width: "100%",
-                                    height: "350px"
-                                }}
-                            >
+                            <small>
+                                Distribution across departments
+                            </small>
 
-                                <ResponsiveContainer>
+                        </div>
+
+                        <div className="chart-container">
+
+                            {departmentData.length === 0 ? (
+
+                                <div className="text-muted text-center py-5">
+                                    No department data available.
+                                </div>
+
+                            ) : (
+
+                                <ResponsiveContainer
+                                    width="100%"
+                                    height={300}
+                                >
 
                                     <BarChart
                                         data={departmentData}
+                                        margin={{
+                                            top: 10,
+                                            right: 20,
+                                            left: 0,
+                                            bottom: 20
+                                        }}
                                     >
+
+                                        <CartesianGrid
+                                            strokeDasharray="3 3"
+                                        />
 
                                         <XAxis
                                             dataKey="department"
@@ -320,13 +398,14 @@ function Dashboard() {
                                         <Bar
                                             dataKey="employees"
                                             fill="#0d6efd"
+                                            radius={[6, 6, 0, 0]}
                                         />
 
                                     </BarChart>
 
                                 </ResponsiveContainer>
 
-                            </div>
+                            )}
 
                         </div>
 
@@ -334,53 +413,64 @@ function Dashboard() {
 
                 </div>
 
-                {/* Country Chart */}
+
+                {/* COUNTRY PIE CHART */}
 
                 <div className="col-lg-5">
 
-                    <div className="card shadow-sm border-0">
+                    <div className="chart-card">
 
-                        <div className="card-body">
+                        <div className="chart-header">
 
-                            <h5 className="mb-4">
+                            <h5>
                                 Employees by Country
                             </h5>
 
-                            <div
-                                style={{
-                                    width: "100%",
-                                    height: "350px"
-                                }}
-                            >
+                            <small>
+                                Employee distribution by location
+                            </small>
 
-                                <ResponsiveContainer>
+                        </div>
+
+                        <div className="chart-container">
+
+                            {countryData.length === 0 ? (
+
+                                <div className="text-muted text-center py-5">
+                                    No country data available.
+                                </div>
+
+                            ) : (
+
+                                <ResponsiveContainer
+                                    width="100%"
+                                    height={300}
+                                >
 
                                     <PieChart>
 
                                         <Pie
                                             data={countryData}
-                                            dataKey="value"
-                                            nameKey="name"
+                                            dataKey="employees"
+                                            nameKey="country"
                                             cx="50%"
-                                            cy="50%"
-                                            outerRadius={100}
+                                            cy="45%"
+                                            outerRadius={90}
                                             label
                                         >
 
                                             {countryData.map(
-                                                (_, index) => (
+                                                (entry, index) => (
 
                                                     <Cell
-                                                        key={index}
+                                                        key={
+                                                            `cell-${index}`
+                                                        }
                                                         fill={
-                                                            [
-                                                                "#0d6efd",
-                                                                "#198754",
-                                                                "#ffc107",
-                                                                "#dc3545",
-                                                                "#6f42c1",
-                                                                "#0dcaf0"
-                                                            ][index % 6]
+                                                            COLORS[
+                                                            index %
+                                                            COLORS.length
+                                                                ]
                                                         }
                                                     />
 
@@ -397,7 +487,7 @@ function Dashboard() {
 
                                 </ResponsiveContainer>
 
-                            </div>
+                            )}
 
                         </div>
 

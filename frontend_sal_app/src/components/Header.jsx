@@ -4,7 +4,11 @@ function Header() {
 
     const navigate = useNavigate();
 
-    const username = localStorage.getItem("username");
+    const username =
+        localStorage.getItem("username") || "User";
+
+    const role =
+        localStorage.getItem("role") || "";
 
     const handleLogout = () => {
 
@@ -16,29 +20,37 @@ function Header() {
     };
 
     return (
-        <header className="bg-white shadow-sm p-3">
+        <header className="app-header">
 
-            <div className="d-flex justify-content-between align-items-center">
-
+            <div>
                 <h5 className="mb-0">
                     Salary Management
                 </h5>
 
-                <div className="d-flex align-items-center gap-3">
+                <small className="text-muted">
+                    Employee Management Portal
+                </small>
+            </div>
 
-                    <span>
-                        Welcome,{" "}
-                        <strong>{username}</strong>
-                    </span>
+            <div className="d-flex align-items-center gap-3">
 
-                    <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </button>
-
+                <div className="user-avatar">
+                    {username
+                        .charAt(0)
+                        .toUpperCase()}
                 </div>
+
+                <div className="user-details">
+                    <strong>{username}</strong>
+                    <small>{role}</small>
+                </div>
+
+                <button
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={handleLogout}
+                >
+                    Logout
+                </button>
 
             </div>
 
