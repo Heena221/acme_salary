@@ -6,11 +6,17 @@ function Login() {
 
     const navigate = useNavigate();
 
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [username, setUsername] =
+        useState("");
 
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [password, setPassword] =
+        useState("");
+
+    const [error, setError] =
+        useState("");
+
+    const [loading, setLoading] =
+        useState(false);
 
     const handleSubmit = async (event) => {
 
@@ -27,19 +33,20 @@ function Login() {
                     password
                 );
 
-            const {
-                token,
-                username: loggedInUsername,
-                role
-            } = response.data;
+            localStorage.setItem(
+                "token",
+                response.data.token
+            );
 
-            // Store authentication information
-            localStorage.setItem("token", token);
             localStorage.setItem(
                 "username",
-                loggedInUsername
+                response.data.username
             );
-            localStorage.setItem("role", role);
+
+            localStorage.setItem(
+                "role",
+                response.data.role
+            );
 
             navigate("/");
 
@@ -62,99 +69,81 @@ function Login() {
     };
 
     return (
+        <div className="login-page">
 
-        <div
-            className="container-fluid d-flex justify-content-center align-items-center"
-            style={{
-                minHeight: "100vh",
-                backgroundColor: "#f5f6fa"
-            }}
-        >
+            <div className="login-card">
 
-            <div
-                className="card shadow border-0"
-                style={{ width: "400px" }}
-            >
+                <div className="login-logo">
+                    ₹
+                </div>
 
-                <div className="card-body p-5">
+                <h2>
+                    Salary Manager
+                </h2>
 
-                    <div className="text-center mb-4">
+                <p className="text-muted mb-4">
+                    Sign in to continue
+                </p>
 
-                        <h2>
-                            Salary Manager
-                        </h2>
+                {error && (
+                    <div className="alert alert-danger">
+                        {error}
+                    </div>
+                )}
 
-                        <p className="text-muted">
-                            Sign in to your account
-                        </p>
+                <form onSubmit={handleSubmit}>
+
+                    <div className="mb-3">
+
+                        <label className="form-label">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={username}
+                            onChange={(e) =>
+                                setUsername(
+                                    e.target.value
+                                )
+                            }
+                            required
+                        />
 
                     </div>
 
-                    {error && (
+                    <div className="mb-4">
 
-                        <div className="alert alert-danger">
-                            {error}
-                        </div>
+                        <label className="form-label">
+                            Password
+                        </label>
 
-                    )}
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={password}
+                            onChange={(e) =>
+                                setPassword(
+                                    e.target.value
+                                )
+                            }
+                            required
+                        />
 
-                    <form onSubmit={handleSubmit}>
+                    </div>
 
-                        <div className="mb-3">
+                    <button
+                        type="submit"
+                        className="btn btn-primary w-100"
+                        disabled={loading}
+                    >
+                        {loading
+                            ? "Signing in..."
+                            : "Login"}
+                    </button>
 
-                            <label className="form-label">
-                                Username
-                            </label>
-
-                            <input
-                                type="text"
-                                className="form-control"
-                                value={username}
-                                onChange={(event) =>
-                                    setUsername(
-                                        event.target.value
-                                    )
-                                }
-                                required
-                            />
-
-                        </div>
-
-                        <div className="mb-4">
-
-                            <label className="form-label">
-                                Password
-                            </label>
-
-                            <input
-                                type="password"
-                                className="form-control"
-                                value={password}
-                                onChange={(event) =>
-                                    setPassword(
-                                        event.target.value
-                                    )
-                                }
-                                required
-                            />
-
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-100"
-                            disabled={loading}
-                        >
-
-                            {loading
-                                ? "Signing in..."
-                                : "Login"}
-
-                        </button>
-
-                    </form>
-
-                </div>
+                </form>
 
             </div>
 

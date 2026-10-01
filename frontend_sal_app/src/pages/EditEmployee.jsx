@@ -1,6 +1,15 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import EmployeeService from "../services/EmployeeService";
+import {
+    useEffect,
+    useState
+} from "react";
+
+import {
+    useNavigate,
+    useParams
+} from "react-router-dom";
+
+import EmployeeService
+    from "../services/EmployeeService";
 
 function EditEmployee() {
 
@@ -8,173 +17,217 @@ function EditEmployee() {
 
     const navigate = useNavigate();
 
-    const [employee, setEmployee] = useState({
-        name: "",
-        country: "",
-        department: "",
-        salary: "",
-        currency: ""
-    });
+    const [employee, setEmployee] =
+        useState({
+            name: "",
+            country: "",
+            department: "",
+            salary: "",
+            currency: ""
+        });
 
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] =
+        useState(true);
+
+    const [saving, setSaving] =
+        useState(false);
+
+    const [error, setError] =
+        useState("");
+
 
     useEffect(() => {
 
-        EmployeeService.getEmployeeById(id)
+        EmployeeService
+            .getEmployeeById(id)
+
             .then((response) => {
-
-                setEmployee(response.data);
-                setLoading(false);
-
+                setEmployee(
+                    response.data
+                );
             })
+
             .catch((error) => {
 
-                console.error("Error fetching employee:", error);
-                setError("Unable to load employee.");
-                setLoading(false);
+                console.error(
+                    "Employee load failed:",
+                    error
+                );
 
+                setError(
+                    "Unable to load employee."
+                );
+
+            })
+
+            .finally(() => {
+                setLoading(false);
             });
 
     }, [id]);
 
+
     const handleChange = (event) => {
 
-        const { name, value } = event.target;
+        const {
+            name,
+            value
+        } = event.target;
 
         setEmployee({
             ...employee,
             [name]: value
         });
-
     };
 
-    const handleSubmit = (event) => {
+
+    const handleSubmit = async (event) => {
 
         event.preventDefault();
 
-        EmployeeService.updateEmployee(id, employee)
-            .then(() => {
+        setSaving(true);
+        setError("");
 
-                console.log("Employee updated successfully");
+        try {
 
-                navigate("/employees");
+            await EmployeeService
+                .updateEmployee(
+                    id,
+                    employee
+                );
 
-            })
-            .catch((error) => {
+            navigate("/employees");
 
-                console.error("Error updating employee:", error);
+        } catch (error) {
 
-                setError("Failed to update employee.");
+            console.error(
+                "Update failed:",
+                error
+            );
 
-            });
+            setError(
+                "Unable to update employee."
+            );
 
+        } finally {
+
+            setSaving(false);
+
+        }
     };
 
+
     if (loading) {
-        return <p>Loading employee...</p>;
+
+        return (
+            <div className="page-loading">
+
+                <div className="spinner-border text-primary" />
+
+                <p>
+                    Loading employee...
+                </p>
+
+            </div>
+        );
     }
+
 
     return (
         <div>
 
-            <h2 className="mb-4">
-                Edit Employee
-            </h2>
+            <div className="page-heading">
 
-            <div className="card shadow-sm border-0">
+                <h2>
+                    Edit Employee
+                </h2>
 
-                <div className="card-body">
+                <p>
+                    Update employee information
+                </p>
 
-                    {error && (
-                        <div className="alert alert-danger">
-                            {error}
-                        </div>
-                    )}
+            </div>
 
-                    <form onSubmit={handleSubmit}>
 
-                        <div className="mb-3">
+            <div className="form-card">
+
+                {error && (
+                    <div className="alert alert-danger">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit}>
+
+                    <div className="row g-3">
+
+                        <div className="col-md-6">
 
                             <label className="form-label">
-                                Employee Name
+                                Name
                             </label>
 
                             <input
-                                type="text"
-                                className="form-control"
                                 name="name"
-                                value={employee.name || ""}
-                                onChange={handleChange}
+                                className="form-control"
+                                value={
+                                    employee.name
+                                    || ""
+                                }
+                                onChange={
+                                    handleChange
+                                }
                                 required
                             />
 
                         </div>
 
-                        <div className="mb-3">
+
+                        <div className="col-md-6">
 
                             <label className="form-label">
                                 Country
                             </label>
 
                             <input
-                                type="text"
-                                className="form-control"
                                 name="country"
-                                value={employee.country || ""}
-                                onChange={handleChange}
+                                className="form-control"
+                                value={
+                                    employee.country
+                                    || ""
+                                }
+                                onChange={
+                                    handleChange
+                                }
                                 required
                             />
 
                         </div>
 
-                        <div className="mb-3">
+
+                        <div className="col-md-6">
 
                             <label className="form-label">
                                 Department
                             </label>
 
-                            <select
-                                className="form-select"
+                            <input
                                 name="department"
-                                value={employee.department || ""}
-                                onChange={handleChange}
+                                className="form-control"
+                                value={
+                                    employee.department
+                                    || ""
+                                }
+                                onChange={
+                                    handleChange
+                                }
                                 required
-                            >
-
-                                <option value="">
-                                    Select Department
-                                </option>
-
-                                <option value="Engineering">
-                                    Engineering
-                                </option>
-
-                                <option value="Finance">
-                                    Finance
-                                </option>
-
-                                <option value="HR">
-                                    HR
-                                </option>
-
-                                <option value="Marketing">
-                                    Marketing
-                                </option>
-
-                                <option value="Sales">
-                                    Sales
-                                </option>
-
-                                <option value="Operations">
-                                    Operations
-                                </option>
-
-                            </select>
+                            />
 
                         </div>
 
-                        <div className="mb-3">
+
+                        <div className="col-md-6">
 
                             <label className="form-label">
                                 Salary
@@ -182,61 +235,94 @@ function EditEmployee() {
 
                             <input
                                 type="number"
-                                className="form-control"
                                 name="salary"
-                                value={employee.salary || ""}
-                                onChange={handleChange}
+                                className="form-control"
+                                value={
+                                    employee.salary
+                                    ?? ""
+                                }
+                                onChange={
+                                    handleChange
+                                }
                                 min="0"
                                 required
                             />
 
                         </div>
 
-                        <div className="mb-4">
+
+                        <div className="col-md-6">
 
                             <label className="form-label">
                                 Currency
                             </label>
 
                             <select
-                                className="form-select"
                                 name="currency"
-                                value={employee.currency || ""}
-                                onChange={handleChange}
+                                className="form-select"
+                                value={
+                                    employee.currency
+                                    || ""
+                                }
+                                onChange={
+                                    handleChange
+                                }
                                 required
                             >
 
                                 <option value="">
-                                    Select Currency
+                                    Select currency
                                 </option>
 
-                                <option value="INR">INR</option>
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
+                                <option value="INR">
+                                    INR
+                                </option>
+
+                                <option value="USD">
+                                    USD
+                                </option>
+
+                                <option value="EUR">
+                                    EUR
+                                </option>
+
+                                <option value="GBP">
+                                    GBP
+                                </option>
 
                             </select>
 
                         </div>
 
+                    </div>
+
+
+                    <div className="d-flex gap-2 mt-4">
+
                         <button
-                            type="submit"
-                            className="btn btn-primary me-2"
+                            className="btn btn-primary"
+                            disabled={saving}
                         >
-                            Update Employee
+                            {saving
+                                ? "Updating..."
+                                : "Update Employee"}
                         </button>
 
                         <button
                             type="button"
-                            className="btn btn-secondary"
-                            onClick={() => navigate("/employees")}
+                            className="btn btn-outline-secondary"
+                            onClick={() =>
+                                navigate(
+                                    "/employees"
+                                )
+                            }
                         >
                             Cancel
                         </button>
 
-                    </form>
+                    </div>
 
-                </div>
+                </form>
 
             </div>
 

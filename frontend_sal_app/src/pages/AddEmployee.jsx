@@ -6,19 +6,28 @@ function AddEmployee() {
 
     const navigate = useNavigate();
 
-    const [employee, setEmployee] = useState({
-        name: "",
-        country: "",
-        department: "",
-        salary: "",
-        currency: ""
-    });
+    const [employee, setEmployee] =
+        useState({
+            name: "",
+            country: "",
+            department: "",
+            salary: "",
+            currency: ""
+        });
 
-    const [error, setError] = useState("");
+    const [saving, setSaving] =
+        useState(false);
+
+    const [error, setError] =
+        useState("");
+
 
     const handleChange = (event) => {
 
-        const { name, value } = event.target;
+        const {
+            name,
+            value
+        } = event.target;
 
         setEmployee({
             ...employee,
@@ -26,175 +35,218 @@ function AddEmployee() {
         });
     };
 
-    const handleSubmit = (event) => {
+
+    const handleSubmit = async (event) => {
 
         event.preventDefault();
 
-        EmployeeService.addEmployee(employee)
-            .then(() => {
+        setSaving(true);
+        setError("");
 
-                console.log("Employee added successfully");
+        try {
 
-                navigate("/employees");
+            await EmployeeService
+                .addEmployee(employee);
 
-            })
-            .catch((error) => {
+            navigate("/employees");
 
-                console.error("Error adding employee:", error);
+        } catch (error) {
 
-                setError("Failed to add employee.");
+            console.error(
+                "Add employee failed:",
+                error
+            );
 
-            });
+            setError(
+                "Unable to add employee."
+            );
+
+        } finally {
+
+            setSaving(false);
+
+        }
     };
+
 
     return (
         <div>
 
-            <h2 className="mb-4">Add Employee</h2>
+            <div className="page-heading">
 
-            <div className="card shadow-sm border-0">
+                <h2>
+                    Add Employee
+                </h2>
 
-                <div className="card-body">
+                <p>
+                    Create a new employee record
+                </p>
 
-                    {error && (
-                        <div className="alert alert-danger">
-                            {error}
-                        </div>
-                    )}
+            </div>
 
-                    <form onSubmit={handleSubmit}>
 
-                        <div className="mb-3">
-                            <label className="form-label">
-                                Employee Name
-                            </label>
+            <div className="form-card">
 
-                            <input
-                                type="text"
-                                className="form-control"
-                                name="name"
-                                value={employee.name}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                {error && (
+                    <div className="alert alert-danger">
+                        {error}
+                    </div>
+                )}
 
-                        <div className="mb-3">
-                            <label className="form-label">
-                                Country
-                            </label>
+                <form onSubmit={handleSubmit}>
 
-                            <input
-                                type="text"
-                                className="form-control"
-                                name="country"
-                                value={employee.country}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                    <EmployeeFields
+                        employee={employee}
+                        handleChange={handleChange}
+                    />
 
-                        <div className="mb-3">
-                            <label className="form-label">
-                                Department
-                            </label>
-
-                            <select
-                                className="form-select"
-                                name="department"
-                                value={employee.department}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">
-                                    Select Department
-                                </option>
-
-                                <option value="Engineering">
-                                    Engineering
-                                </option>
-
-                                <option value="Finance">
-                                    Finance
-                                </option>
-
-                                <option value="HR">
-                                    HR
-                                </option>
-
-                                <option value="Marketing">
-                                    Marketing
-                                </option>
-
-                                <option value="Sales">
-                                    Sales
-                                </option>
-
-                                <option value="Operations">
-                                    Operations
-                                </option>
-
-                            </select>
-                        </div>
-
-                        <div className="mb-3">
-                            <label className="form-label">
-                                Salary
-                            </label>
-
-                            <input
-                                type="number"
-                                className="form-control"
-                                name="salary"
-                                value={employee.salary}
-                                onChange={handleChange}
-                                min="0"
-                                required
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="form-label">
-                                Currency
-                            </label>
-
-                            <select
-                                className="form-select"
-                                name="currency"
-                                value={employee.currency}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">
-                                    Select Currency
-                                </option>
-
-                                <option value="INR">INR</option>
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-
-                            </select>
-                        </div>
+                    <div className="d-flex gap-2 mt-4">
 
                         <button
-                            type="submit"
-                            className="btn btn-primary me-2"
+                            className="btn btn-primary"
+                            disabled={saving}
                         >
-                            Save Employee
+                            {saving
+                                ? "Saving..."
+                                : "Save Employee"}
                         </button>
 
                         <button
                             type="button"
-                            className="btn btn-secondary"
-                            onClick={() => navigate("/employees")}
+                            className="btn btn-outline-secondary"
+                            onClick={() =>
+                                navigate(
+                                    "/employees"
+                                )
+                            }
                         >
                             Cancel
                         </button>
 
-                    </form>
+                    </div>
 
-                </div>
+                </form>
+
+            </div>
+
+        </div>
+    );
+}
+
+
+function EmployeeFields({
+                            employee,
+                            handleChange
+                        }) {
+
+    return (
+        <div className="row g-3">
+
+            <div className="col-md-6">
+
+                <label className="form-label">
+                    Name
+                </label>
+
+                <input
+                    name="name"
+                    className="form-control"
+                    value={employee.name}
+                    onChange={handleChange}
+                    required
+                />
+
+            </div>
+
+
+            <div className="col-md-6">
+
+                <label className="form-label">
+                    Country
+                </label>
+
+                <input
+                    name="country"
+                    className="form-control"
+                    value={employee.country}
+                    onChange={handleChange}
+                    required
+                />
+
+            </div>
+
+
+            <div className="col-md-6">
+
+                <label className="form-label">
+                    Department
+                </label>
+
+                <input
+                    name="department"
+                    className="form-control"
+                    value={employee.department}
+                    onChange={handleChange}
+                    required
+                />
+
+            </div>
+
+
+            <div className="col-md-6">
+
+                <label className="form-label">
+                    Salary
+                </label>
+
+                <input
+                    type="number"
+                    name="salary"
+                    className="form-control"
+                    value={employee.salary}
+                    onChange={handleChange}
+                    required
+                    min="0"
+                />
+
+            </div>
+
+
+            <div className="col-md-6">
+
+                <label className="form-label">
+                    Currency
+                </label>
+
+                <select
+                    name="currency"
+                    className="form-select"
+                    value={employee.currency}
+                    onChange={handleChange}
+                    required
+                >
+
+                    <option value="">
+                        Select currency
+                    </option>
+
+                    <option value="INR">
+                        INR
+                    </option>
+
+                    <option value="USD">
+                        USD
+                    </option>
+
+                    <option value="EUR">
+                        EUR
+                    </option>
+
+                    <option value="GBP">
+                        GBP
+                    </option>
+
+                </select>
 
             </div>
 

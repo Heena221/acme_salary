@@ -1,478 +1,646 @@
-import { useEffect, useState } from "react";
-import EmployeeService from "../services/EmployeeService";
-import { useNavigate } from "react-router-dom";
+import {
+    useEffect,
+    useState
+} from "react";
+
+import {
+    useNavigate
+} from "react-router-dom";
+
+import EmployeeService
+    from "../services/EmployeeService";
 
 function Employees() {
 
-    const [employees, setEmployees] = useState([]);
-    const [filters, setFilters] = useState({
-        id: "",
-        name: "",
-        country: "",
-        department: "",
-        salary: "",
-        currency: ""
-    });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
     const navigate = useNavigate();
-    const [sortConfig, setSortConfig] = useState({
-        key: null,
-        direction: "asc"
-    });
-    const [currentPage, setCurrentPage] = useState(1);
 
-    const employeesPerPage = 5;
+    const [employees, setEmployees] =
+        useState([]);
 
-    useEffect(() => {
+    const [loading, setLoading] =
+        useState(true);
 
-        EmployeeService.getAllEmployees()
+    const [error, setError] =
+        useState("");
+
+    const [searchName, setSearchName] =
+        useState("");
+
+    const [searchCountry, setSearchCountry] =
+        useState("");
+
+    const [
+        searchDepartment,
+        setSearchDepartment
+    ] = useState("");
+
+    const [sortField, setSortField] =
+        useState("employeeId");
+
+    const [sortDirection, setSortDirection] =
+        useState("asc");
+
+    const [currentPage, setCurrentPage] =
+        useState(1);
+
+    const employeesPerPage = 10;
+
+
+    const loadEmployees = () => {
+
+        setLoading(true);
+
+        EmployeeService
+            .getAllEmployees()
+
             .then((response) => {
-                setEmployees(response.data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error("Error fetching employees:", error);
-                setError("Unable to load employees.");
-                setLoading(false);
-            });
-
-    }, []);
-
-    if (loading) {
-        return <p>Loading employees...</p>;
-    }
-
-    if (error) {
-        return <div className="alert alert-danger">{error}</div>;
-    }
-
-
-    const handleDelete = (id) => {
-
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this employee?"
-        );
-
-        if (!confirmDelete) {
-            return;
-        }
-
-        EmployeeService.deleteEmployee(id)
-            .then(() => {
-
-                console.log("Employee deleted successfully");
 
                 setEmployees(
-                    employees.filter(
-                        (employee) => employee.employeeId !== id
-                    )
+                    response.data
+                );
+
+                setError("");
+
+            })
+
+            .catch((error) => {
+
+                console.error(
+                    "Error fetching employees:",
+                    error
+                );
+
+                setError(
+                    "Unable to load employees."
                 );
 
             })
-            .catch((error) => {
 
-                console.error("Error deleting employee:", error);
-
-                alert("Failed to delete employee.");
-
+            .finally(() => {
+                setLoading(false);
             });
     };
 
-    const handleFilterChange = (event) => {
 
-        const { name, value } = event.target;
+    useEffect(() => {
+        loadEmployees();
+    }, []);
 
-        setFilters({
-            ...filters,
-            [name]: value
-        });
 
+    useEffect(() => {
         setCurrentPage(1);
+    }, [
+        searchName,
+        searchCountry,
+        searchDepartment
+    ]);
+
+
+    const handleSort = (field) => {
+
+        if (sortField === field) {
+
+            setSortDirection(
+                sortDirection === "asc"
+                    ? "desc"
+                    : "asc"
+            );
+
+        } else {
+
+            setSortField(field);
+            setSortDirection("asc");
+
+        }
     };
 
-    const filteredEmployees = employees.filter((employee) => {
 
-        return (
-            employee.employeeId
-                ?.toString()
-                .includes(filters.id) &&
+    const filteredEmployees =
+        employees.filter((employee) => {
 
-            employee.name
-                ?.toLowerCase()
-                .includes(filters.name.toLowerCase()) &&
+            const name =
+                employee.name
+                    ?.toLowerCase()
+                || "";
 
-            employee.country
-                ?.toLowerCase()
-                .includes(filters.country.toLowerCase()) &&
+            const country =
+                employee.country
+                    ?.toLowerCase()
+                || "";
 
-            employee.department
-                ?.toLowerCase()
-                .includes(filters.department.toLowerCase()) &&
+            const department =
+                employee.department
+                    ?.toLowerCase()
+                || "";
 
-            employee.salary
-                ?.toString()
-                .includes(filters.salary) &&
+            return (
+                name.includes(
+                    searchName.toLowerCase()
+                )
+                &&
+                country.includes(
+                    searchCountry.toLowerCase()
+                )
+                &&
+                department.includes(
+                    searchDepartment.toLowerCase()
+                )
+            );
+        });
 
-            employee.currency
-                ?.toLowerCase()
-                .includes(filters.currency.toLowerCase())
+
+    const sortedEmployees =
+        [...filteredEmployees]
+            .sort((a, b) => {
+
+                let first =
+                    a[sortField];
+
+                let second =
+                    b[sortField];
+
+                if (
+                    typeof first === "string"
+                ) {
+                    first =
+                        first.toLowerCase();
+                }
+
+                if (
+                    typeof second === "string"
+                ) {
+                    second =
+                        second.toLowerCase();
+                }
+
+                if (first < second) {
+                    return sortDirection === "asc"
+                        ? -1
+                        : 1;
+                }
+
+                if (first > second) {
+                    return sortDirection === "asc"
+                        ? 1
+                        : -1;
+                }
+
+                return 0;
+            });
+
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                sortedEmployees.length /
+                employeesPerPage
+            )
         );
-    });
 
-    const sortedEmployees = [...filteredEmployees].sort((a, b) => {
 
-        if (!sortConfig.key) {
-            return 0;
-        }
+    const indexOfLast =
+        currentPage *
+        employeesPerPage;
 
-        const valueA = a[sortConfig.key];
-        const valueB = b[sortConfig.key];
-
-        if (typeof valueA === "string") {
-
-            const result = valueA.localeCompare(valueB);
-
-            return sortConfig.direction === "asc"
-                ? result
-                : -result;
-        }
-
-        if (valueA < valueB) {
-            return sortConfig.direction === "asc" ? -1 : 1;
-        }
-
-        if (valueA > valueB) {
-            return sortConfig.direction === "asc" ? 1 : -1;
-        }
-
-        return 0;
-    });
-
-    const indexOfLastEmployee =
-        currentPage * employeesPerPage;
-
-    const indexOfFirstEmployee =
-        indexOfLastEmployee - employeesPerPage;
+    const indexOfFirst =
+        indexOfLast -
+        employeesPerPage;
 
     const currentEmployees =
         sortedEmployees.slice(
-            indexOfFirstEmployee,
-            indexOfLastEmployee
+            indexOfFirst,
+            indexOfLast
         );
 
-    const totalPages = Math.ceil(
-        sortedEmployees.length / employeesPerPage
-    );
-    const handleSort = (key) => {
 
-        let direction = "asc";
+    const handleDelete = async (id) => {
 
-        if (
-            sortConfig.key === key &&
-            sortConfig.direction === "asc"
-        ) {
-            direction = "desc";
+        const confirmed =
+            window.confirm(
+                "Are you sure you want to delete this employee?"
+            );
+
+        if (!confirmed) {
+            return;
         }
 
-        setSortConfig({
-            key,
-            direction
-        });
+        try {
+
+            await EmployeeService
+                .deleteEmployee(id);
+
+            setEmployees(
+                employees.filter(
+                    employee =>
+                        employee.employeeId !== id
+                )
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Delete failed:",
+                error
+            );
+
+            alert(
+                "Unable to delete employee."
+            );
+        }
     };
+
+
+    const sortIcon = (field) => {
+
+        if (sortField !== field) {
+            return " ↕";
+        }
+
+        return sortDirection === "asc"
+            ? " ↑"
+            : " ↓";
+    };
+
+
+    if (loading) {
+
+        return (
+            <div className="page-loading">
+
+                <div
+                    className="spinner-border text-primary"
+                />
+
+                <p>
+                    Loading employees...
+                </p>
+
+            </div>
+        );
+    }
+
 
     return (
         <div>
 
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Employees</h2>
+            <div className="page-heading-row">
+
+                <div className="page-heading">
+
+                    <h2>
+                        Employees
+                    </h2>
+
+                    <p>
+                        Manage employee records and
+                        salary information
+                    </p>
+
+                </div>
 
                 <button
                     className="btn btn-primary"
-                    onClick={() => navigate("/employees/add")}
+                    onClick={() =>
+                        navigate(
+                            "/employees/add"
+                        )
+                    }
                 >
                     + Add Employee
                 </button>
+
             </div>
 
-            <div className="card shadow-sm border-0">
 
-                <div className="card-body">
+            {error && (
+                <div className="alert alert-danger">
+                    {error}
+                </div>
+            )}
 
-                    <div className="table-responsive">
 
-                        <table className="table table-hover align-middle">
+            <div className="employee-table-card">
 
-                            <thead className="table-dark">
+                <div className="table-responsive">
 
-                            {/* Column Names */}
+                    <table className="table">
 
-                            <tr>
+                        <thead>
 
-                                <th
-                                    onClick={() => handleSort("employeeId")}
-                                    style={{ cursor: "pointer" }}
+                        <tr>
+
+                            <th
+                                onClick={() =>
+                                    handleSort(
+                                        "employeeId"
+                                    )
+                                }
+                            >
+                                ID
+                                {sortIcon(
+                                    "employeeId"
+                                )}
+                            </th>
+
+                            <th
+                                onClick={() =>
+                                    handleSort(
+                                        "name"
+                                    )
+                                }
+                            >
+                                Name
+                                {sortIcon("name")}
+                            </th>
+
+                            <th
+                                onClick={() =>
+                                    handleSort(
+                                        "country"
+                                    )
+                                }
+                            >
+                                Country
+                                {sortIcon(
+                                    "country"
+                                )}
+                            </th>
+
+                            <th
+                                onClick={() =>
+                                    handleSort(
+                                        "department"
+                                    )
+                                }
+                            >
+                                Department
+                                {sortIcon(
+                                    "department"
+                                )}
+                            </th>
+
+                            <th
+                                onClick={() =>
+                                    handleSort(
+                                        "salary"
+                                    )
+                                }
+                            >
+                                Salary
+                                {sortIcon(
+                                    "salary"
+                                )}
+                            </th>
+
+                            <th>
+                                Currency
+                            </th>
+
+                            <th>
+                                Actions
+                            </th>
+
+                        </tr>
+
+
+                        <tr className="search-row">
+
+                            <th />
+
+                            <th>
+
+                                <input
+                                    className="form-control form-control-sm"
+                                    placeholder="Search name"
+                                    value={searchName}
+                                    onChange={(e) =>
+                                        setSearchName(
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+                            </th>
+
+                            <th>
+
+                                <input
+                                    className="form-control form-control-sm"
+                                    placeholder="Search country"
+                                    value={searchCountry}
+                                    onChange={(e) =>
+                                        setSearchCountry(
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+                            </th>
+
+                            <th>
+
+                                <input
+                                    className="form-control form-control-sm"
+                                    placeholder="Search department"
+                                    value={
+                                        searchDepartment
+                                    }
+                                    onChange={(e) =>
+                                        setSearchDepartment(
+                                            e.target.value
+                                        )
+                                    }
+                                />
+
+                            </th>
+
+                            <th />
+                            <th />
+                            <th />
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                        {currentEmployees
+                            .map(employee => (
+
+                                <tr
+                                    key={
+                                        employee.employeeId
+                                    }
                                 >
-                                    ID ↕
-                                </th>
 
-                                <th
-                                    onClick={() => handleSort("name")}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    Name ↕
-                                </th>
+                                    <td>
+                                        {
+                                            employee.employeeId
+                                        }
+                                    </td>
 
-                                <th
-                                    onClick={() => handleSort("country")}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    Country ↕
-                                </th>
+                                    <td className="fw-semibold">
+                                        {employee.name}
+                                    </td>
 
-                                <th
-                                    onClick={() => handleSort("department")}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    Department ↕
-                                </th>
+                                    <td>
+                                        {employee.country}
+                                    </td>
 
-                                <th
-                                    onClick={() => handleSort("salary")}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    Salary ↕
-                                </th>
+                                    <td>
+                                        {
+                                            employee.department
+                                        }
+                                    </td>
 
-                                <th
-                                    onClick={() => handleSort("currency")}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    Currency ↕
-                                </th>
+                                    <td className="fw-semibold">
+                                        {Number(
+                                            employee.salary
+                                        ).toLocaleString()}
+                                    </td>
 
-                                <th>Actions</th>
+                                    <td>
 
-                            </tr>
+                                        <span className="currency-badge">
+                                            {
+                                                employee.currency
+                                            }
+                                        </span>
 
-                            {/* Column Search */}
+                                    </td>
 
-                            <tr>
+                                    <td>
 
-                                <th>
-                                    <input
-                                        type="text"
-                                        name="id"
-                                        className="form-control form-control-sm"
-                                        placeholder="ID"
-                                        value={filters.id}
-                                        onChange={handleFilterChange}
-                                    />
-                                </th>
-
-                                <th>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        className="form-control form-control-sm"
-                                        placeholder="Search name"
-                                        value={filters.name}
-                                        onChange={handleFilterChange}
-                                    />
-                                </th>
-
-                                <th>
-                                    <input
-                                        type="text"
-                                        name="country"
-                                        className="form-control form-control-sm"
-                                        placeholder="Search country"
-                                        value={filters.country}
-                                        onChange={handleFilterChange}
-                                    />
-                                </th>
-
-                                <th>
-                                    <input
-                                        type="text"
-                                        name="department"
-                                        className="form-control form-control-sm"
-                                        placeholder="Search dept"
-                                        value={filters.department}
-                                        onChange={handleFilterChange}
-                                    />
-                                </th>
-
-                                <th>
-                                    <input
-                                        type="text"
-                                        name="salary"
-                                        className="form-control form-control-sm"
-                                        placeholder="Salary"
-                                        value={filters.salary}
-                                        onChange={handleFilterChange}
-                                    />
-                                </th>
-
-                                <th>
-                                    <input
-                                        type="text"
-                                        name="currency"
-                                        className="form-control form-control-sm"
-                                        placeholder="Currency"
-                                        value={filters.currency}
-                                        onChange={handleFilterChange}
-                                    />
-                                </th>
-
-                                <th></th>
-
-                            </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                            {sortedEmployees.length > 0 ? (
-
-                                currentEmployees.map((employee) => (
-
-                                    <tr key={employee.employeeId}>
-
-                                        <td>{employee.employeeId}</td>
-
-                                        <td>{employee.name}</td>
-
-                                        <td>{employee.country}</td>
-
-                                        <td>{employee.department}</td>
-
-                                        <td>
-                                            {Number(employee.salary).toLocaleString()}
-                                        </td>
-
-                                        <td>{employee.currency}</td>
-
-                                        <td>
+                                        <div className="d-flex gap-2">
 
                                             <button
-                                                className="btn btn-warning btn-sm me-2"
+                                                className="btn btn-sm btn-outline-primary"
                                                 onClick={() =>
-                                                    navigate(`/employees/edit/${employee.employeeId}`)
+                                                    navigate(
+                                                        `/employees/edit/${employee.employeeId}`
+                                                    )
                                                 }
                                             >
                                                 Edit
                                             </button>
 
                                             <button
-                                                className="btn btn-danger btn-sm"
-                                                onClick={() => handleDelete(employee.employeeId)}
+                                                className="btn btn-sm btn-outline-danger"
+                                                onClick={() =>
+                                                    handleDelete(
+                                                        employee.employeeId
+                                                    )
+                                                }
                                             >
                                                 Delete
                                             </button>
 
-                                        </td>
+                                        </div>
 
-                                    </tr>
-
-                                ))
-
-                            ) : (
-
-                                <tr>
-                                    <td colSpan="7" className="text-center">
-                                        No employees found
                                     </td>
+
                                 </tr>
 
-                            )}
+                            ))}
 
-                            </tbody>
 
-                        </table>
-                        <div className="d-flex justify-content-between align-items-center mt-3">
+                        {currentEmployees.length === 0 && (
 
-                            <div className="text-muted">
+                            <tr>
 
-                                Showing{" "}
-                                {sortedEmployees.length === 0
-                                    ? 0
-                                    : indexOfFirstEmployee + 1}
-                                {" - "}
-                                {Math.min(
-                                    indexOfLastEmployee,
-                                    sortedEmployees.length
-                                )}
-                                {" of "}
-                                {sortedEmployees.length}
-                                {" employees"}
+                                <td
+                                    colSpan="7"
+                                    className="text-center py-5"
+                                >
 
-                            </div>
+                                    <div className="fs-3">
+                                        👥
+                                    </div>
 
-                            <nav>
+                                    <strong>
+                                        No employees found
+                                    </strong>
 
-                                <ul className="pagination mb-0">
+                                    <div className="text-muted small mt-1">
+                                        Try changing your
+                                        search criteria.
+                                    </div>
 
-                                    <li
-                                        className={`page-item ${
-                                            currentPage === 1 ? "disabled" : ""
-                                        }`}
-                                    >
-                                        <button
-                                            className="page-link"
-                                            onClick={() =>
-                                                setCurrentPage(currentPage - 1)
-                                            }
-                                        >
-                                            Previous
-                                        </button>
-                                    </li>
+                                </td>
 
-                                    {Array.from(
-                                        { length: totalPages },
-                                        (_, index) => (
-                                            <li
-                                                key={index + 1}
-                                                className={`page-item ${
-                                                    currentPage === index + 1
-                                                        ? "active"
-                                                        : ""
-                                                }`}
-                                            >
-                                                <button
-                                                    className="page-link"
-                                                    onClick={() =>
-                                                        setCurrentPage(index + 1)
-                                                    }
-                                                >
-                                                    {index + 1}
-                                                </button>
-                                            </li>
-                                        )
-                                    )}
+                            </tr>
 
-                                    <li
-                                        className={`page-item ${
-                                            currentPage === totalPages
-                                                ? "disabled"
-                                                : ""
-                                        }`}
-                                    >
-                                        <button
-                                            className="page-link"
-                                            onClick={() =>
-                                                setCurrentPage(currentPage + 1)
-                                            }
-                                        >
-                                            Next
-                                        </button>
-                                    </li>
+                        )}
 
-                                </ul>
+                        </tbody>
 
-                            </nav>
+                    </table>
 
-                        </div>
+                </div>
+
+
+                <div className="table-footer">
+
+                    <small className="text-muted">
+
+                        Showing{" "}
+
+                        {sortedEmployees.length === 0
+                            ? 0
+                            : indexOfFirst + 1}
+
+                        {" - "}
+
+                        {Math.min(
+                            indexOfLast,
+                            sortedEmployees.length
+                        )}
+
+                        {" of "}
+
+                        {sortedEmployees.length}
+
+                    </small>
+
+
+                    <div className="pagination-controls">
+
+                        <button
+                            className="btn btn-sm btn-outline-secondary"
+                            disabled={
+                                currentPage === 1
+                            }
+                            onClick={() =>
+                                setCurrentPage(
+                                    currentPage - 1
+                                )
+                            }
+                        >
+                            Previous
+                        </button>
+
+                        <span>
+                            Page {currentPage}
+                            {" of "}
+                            {totalPages}
+                        </span>
+
+                        <button
+                            className="btn btn-sm btn-outline-secondary"
+                            disabled={
+                                currentPage >=
+                                totalPages
+                            }
+                            onClick={() =>
+                                setCurrentPage(
+                                    currentPage + 1
+                                )
+                            }
+                        >
+                            Next
+                        </button>
 
                     </div>
 

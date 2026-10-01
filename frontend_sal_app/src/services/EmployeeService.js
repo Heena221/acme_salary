@@ -13,8 +13,12 @@ const getAuthConfig = () => {
 };
 
 const getAllEmployees = () => {
+    return axios.get(API_URL, getAuthConfig());
+};
+
+const getEmployeeById = (id) => {
     return axios.get(
-        API_URL,
+        `${API_URL}/${id}`,
         getAuthConfig()
     );
 };
@@ -23,13 +27,6 @@ const addEmployee = (employee) => {
     return axios.post(
         API_URL,
         employee,
-        getAuthConfig()
-    );
-};
-
-const getEmployeeById = (id) => {
-    return axios.get(
-        `${API_URL}/${id}`,
         getAuthConfig()
     );
 };
@@ -51,8 +48,8 @@ const deleteEmployee = (id) => {
 
 const EmployeeService = {
     getAllEmployees,
-    addEmployee,
     getEmployeeById,
+    addEmployee,
     updateEmployee,
     deleteEmployee
 };

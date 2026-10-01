@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
-import EmployeeService from "../services/EmployeeService";
+import {
+    useEffect,
+    useState
+} from "react";
+
+import EmployeeService
+    from "../services/EmployeeService";
 
 import {
     BarChart,
@@ -17,23 +22,32 @@ import {
 
 function Dashboard() {
 
-    const [employees, setEmployees] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [employees, setEmployees] =
+        useState([]);
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState("");
 
     useEffect(() => {
 
-        EmployeeService.getAllEmployees()
+        EmployeeService
+            .getAllEmployees()
+
             .then((response) => {
 
-                setEmployees(response.data);
-                setLoading(false);
+                setEmployees(
+                    response.data
+                );
 
             })
+
             .catch((error) => {
 
                 console.error(
-                    "Error fetching dashboard data:",
+                    "Dashboard error:",
                     error
                 );
 
@@ -41,90 +55,85 @@ function Dashboard() {
                     "Unable to load dashboard data."
                 );
 
-                setLoading(false);
+            })
 
+            .finally(() => {
+                setLoading(false);
             });
 
     }, []);
 
-
-    // --------------------------------------------------
-    // KPI STATISTICS
-    // --------------------------------------------------
-
-    const totalEmployees = employees.length;
+    const totalEmployees =
+        employees.length;
 
     const totalDepartments =
         new Set(
             employees
-                .map(employee => employee.department)
+                .map(e => e.department)
                 .filter(Boolean)
         ).size;
 
     const totalCountries =
         new Set(
             employees
-                .map(employee => employee.country)
+                .map(e => e.country)
                 .filter(Boolean)
         ).size;
 
     const totalCurrencies =
         new Set(
             employees
-                .map(employee => employee.currency)
+                .map(e => e.currency)
                 .filter(Boolean)
         ).size;
 
-
-    // --------------------------------------------------
-    // DEPARTMENT CHART DATA
-    // --------------------------------------------------
 
     const departmentCounts = {};
 
     employees.forEach((employee) => {
 
         const department =
-            employee.department || "Unknown";
+            employee.department
+            || "Unknown";
 
         departmentCounts[department] =
-            (departmentCounts[department] || 0) + 1;
+            (departmentCounts[department] || 0)
+            + 1;
 
     });
 
     const departmentData =
-        Object.entries(departmentCounts)
-            .map(([department, count]) => ({
-                department,
-                employees: count
-            }));
+        Object.entries(
+            departmentCounts
+        ).map(([department, count]) => ({
+            department,
+            employees: count
+        }));
 
-
-    // --------------------------------------------------
-    // COUNTRY CHART DATA
-    // --------------------------------------------------
 
     const countryCounts = {};
 
     employees.forEach((employee) => {
 
         const country =
-            employee.country || "Unknown";
+            employee.country
+            || "Unknown";
 
         countryCounts[country] =
-            (countryCounts[country] || 0) + 1;
+            (countryCounts[country] || 0)
+            + 1;
 
     });
 
     const countryData =
-        Object.entries(countryCounts)
-            .map(([country, count]) => ({
-                country,
-                employees: count
-            }));
+        Object.entries(
+            countryCounts
+        ).map(([country, count]) => ({
+            country,
+            employees: count
+        }));
 
 
-    // Pie chart colors
     const COLORS = [
         "#0d6efd",
         "#198754",
@@ -132,30 +141,20 @@ function Dashboard() {
         "#dc3545",
         "#6f42c1",
         "#0dcaf0",
-        "#fd7e14",
-        "#20c997"
+        "#fd7e14"
     ];
 
-
-    // --------------------------------------------------
-    // LOADING
-    // --------------------------------------------------
 
     if (loading) {
 
         return (
-            <div className="text-center py-5">
+            <div className="page-loading">
 
                 <div
                     className="spinner-border text-primary"
-                    role="status"
-                >
-                    <span className="visually-hidden">
-                        Loading...
-                    </span>
-                </div>
+                />
 
-                <p className="text-muted mt-3">
+                <p>
                     Loading dashboard...
                 </p>
 
@@ -163,10 +162,6 @@ function Dashboard() {
         );
     }
 
-
-    // --------------------------------------------------
-    // ERROR
-    // --------------------------------------------------
 
     if (error) {
 
@@ -178,153 +173,164 @@ function Dashboard() {
     }
 
 
-    // --------------------------------------------------
-    // DASHBOARD
-    // --------------------------------------------------
-
     return (
-
         <div>
 
-            {/* PAGE HEADER */}
+            <div className="page-heading">
 
-            <div className="mb-4">
-
-                <h2 className="mb-1">
+                <h2>
                     Dashboard
                 </h2>
 
-                <p className="text-muted mb-0">
-                    Overview of your employee and salary
-                    management system
+                <p>
+                    Overview of your employee and
+                    salary management system
                 </p>
 
             </div>
 
 
-            {/* KPI CARDS */}
-
             <div className="row g-4 mb-4">
 
+                <KpiCard
+                    title="Total Employees"
+                    value={totalEmployees}
+                    text="Active employee records"
+                    icon="👥"
+                />
 
-                {/* TOTAL EMPLOYEES */}
+                <KpiCard
+                    title="Departments"
+                    value={totalDepartments}
+                    text="Across organization"
+                    icon="🏢"
+                />
 
-                <div className="col-md-6 col-xl-3">
+                <KpiCard
+                    title="Countries"
+                    value={totalCountries}
+                    text="Employee locations"
+                    icon="🌍"
+                />
 
-                    <div className="dashboard-card">
+                <KpiCard
+                    title="Currencies"
+                    value={totalCurrencies}
+                    text="Salary currencies"
+                    icon="💰"
+                />
 
-                        <div>
-
-                            <p>
-                                Total Employees
-                            </p>
-
-                            <h2>
-                                {totalEmployees}
-                            </h2>
-
-                            <small>
-                                Active employee records
-                            </small>
-
-                        </div>
-
-                        <div className="dashboard-icon">
-                            👥
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                {/* DEPARTMENTS */}
-
-                <div className="col-md-6 col-xl-3">
-
-                    <div className="dashboard-card">
-
-                        <div>
-
-                            <p>
-                                Departments
-                            </p>
-
-                            <h2>
-                                {totalDepartments}
-                            </h2>
-
-                            <small>
-                                Across organization
-                            </small>
-
-                        </div>
-
-                        <div className="dashboard-icon">
-                            🏢
-                        </div>
-
-                    </div>
-
-                </div>
+            </div>
 
 
-                {/* COUNTRIES */}
+            <div className="row g-4">
 
-                <div className="col-md-6 col-xl-3">
+                <div className="col-lg-7">
 
-                    <div className="dashboard-card">
+                    <div className="chart-card">
 
-                        <div>
+                        <h5>
+                            Employees by Department
+                        </h5>
 
-                            <p>
-                                Countries
-                            </p>
+                        <p className="chart-subtitle">
+                            Distribution across departments
+                        </p>
 
-                            <h2>
-                                {totalCountries}
-                            </h2>
+                        <ResponsiveContainer
+                            width="100%"
+                            height={300}
+                        >
 
-                            <small>
-                                Employee locations
-                            </small>
+                            <BarChart
+                                data={departmentData}
+                            >
 
-                        </div>
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                />
 
-                        <div className="dashboard-icon">
-                            🌍
-                        </div>
+                                <XAxis
+                                    dataKey="department"
+                                />
+
+                                <YAxis
+                                    allowDecimals={false}
+                                />
+
+                                <Tooltip />
+
+                                <Bar
+                                    dataKey="employees"
+                                    fill="#0d6efd"
+                                    radius={[
+                                        6,
+                                        6,
+                                        0,
+                                        0
+                                    ]}
+                                />
+
+                            </BarChart>
+
+                        </ResponsiveContainer>
 
                     </div>
 
                 </div>
 
 
-                {/* CURRENCIES */}
+                <div className="col-lg-5">
 
-                <div className="col-md-6 col-xl-3">
+                    <div className="chart-card">
 
-                    <div className="dashboard-card">
+                        <h5>
+                            Employees by Country
+                        </h5>
 
-                        <div>
+                        <p className="chart-subtitle">
+                            Employee distribution by location
+                        </p>
 
-                            <p>
-                                Currencies
-                            </p>
+                        <ResponsiveContainer
+                            width="100%"
+                            height={300}
+                        >
 
-                            <h2>
-                                {totalCurrencies}
-                            </h2>
+                            <PieChart>
 
-                            <small>
-                                Salary currencies
-                            </small>
+                                <Pie
+                                    data={countryData}
+                                    dataKey="employees"
+                                    nameKey="country"
+                                    outerRadius={90}
+                                    label
+                                >
 
-                        </div>
+                                    {countryData.map(
+                                        (_, index) => (
 
-                        <div className="dashboard-icon">
-                            💰
-                        </div>
+                                            <Cell
+                                                key={index}
+                                                fill={
+                                                    COLORS[
+                                                    index %
+                                                    COLORS.length
+                                                        ]
+                                                }
+                                            />
+
+                                        )
+                                    )}
+
+                                </Pie>
+
+                                <Tooltip />
+                                <Legend />
+
+                            </PieChart>
+
+                        </ResponsiveContainer>
 
                     </div>
 
@@ -332,167 +338,41 @@ function Dashboard() {
 
             </div>
 
+        </div>
+    );
+}
 
-            {/* CHARTS */}
 
-            <div className="row g-4">
+function KpiCard({
+                     title,
+                     value,
+                     text,
+                     icon
+                 }) {
 
+    return (
+        <div className="col-md-6 col-xl-3">
 
-                {/* DEPARTMENT BAR CHART */}
+            <div className="dashboard-card">
 
-                <div className="col-lg-7">
+                <div>
 
-                    <div className="chart-card">
+                    <p>
+                        {title}
+                    </p>
 
-                        <div className="chart-header">
+                    <h2>
+                        {value}
+                    </h2>
 
-                            <h5>
-                                Employees by Department
-                            </h5>
-
-                            <small>
-                                Distribution across departments
-                            </small>
-
-                        </div>
-
-                        <div className="chart-container">
-
-                            {departmentData.length === 0 ? (
-
-                                <div className="text-muted text-center py-5">
-                                    No department data available.
-                                </div>
-
-                            ) : (
-
-                                <ResponsiveContainer
-                                    width="100%"
-                                    height={300}
-                                >
-
-                                    <BarChart
-                                        data={departmentData}
-                                        margin={{
-                                            top: 10,
-                                            right: 20,
-                                            left: 0,
-                                            bottom: 20
-                                        }}
-                                    >
-
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                        />
-
-                                        <XAxis
-                                            dataKey="department"
-                                        />
-
-                                        <YAxis
-                                            allowDecimals={false}
-                                        />
-
-                                        <Tooltip />
-
-                                        <Bar
-                                            dataKey="employees"
-                                            fill="#0d6efd"
-                                            radius={[6, 6, 0, 0]}
-                                        />
-
-                                    </BarChart>
-
-                                </ResponsiveContainer>
-
-                            )}
-
-                        </div>
-
-                    </div>
+                    <small>
+                        {text}
+                    </small>
 
                 </div>
 
-
-                {/* COUNTRY PIE CHART */}
-
-                <div className="col-lg-5">
-
-                    <div className="chart-card">
-
-                        <div className="chart-header">
-
-                            <h5>
-                                Employees by Country
-                            </h5>
-
-                            <small>
-                                Employee distribution by location
-                            </small>
-
-                        </div>
-
-                        <div className="chart-container">
-
-                            {countryData.length === 0 ? (
-
-                                <div className="text-muted text-center py-5">
-                                    No country data available.
-                                </div>
-
-                            ) : (
-
-                                <ResponsiveContainer
-                                    width="100%"
-                                    height={300}
-                                >
-
-                                    <PieChart>
-
-                                        <Pie
-                                            data={countryData}
-                                            dataKey="employees"
-                                            nameKey="country"
-                                            cx="50%"
-                                            cy="45%"
-                                            outerRadius={90}
-                                            label
-                                        >
-
-                                            {countryData.map(
-                                                (entry, index) => (
-
-                                                    <Cell
-                                                        key={
-                                                            `cell-${index}`
-                                                        }
-                                                        fill={
-                                                            COLORS[
-                                                            index %
-                                                            COLORS.length
-                                                                ]
-                                                        }
-                                                    />
-
-                                                )
-                                            )}
-
-                                        </Pie>
-
-                                        <Tooltip />
-
-                                        <Legend />
-
-                                    </PieChart>
-
-                                </ResponsiveContainer>
-
-                            )}
-
-                        </div>
-
-                    </div>
-
+                <div className="dashboard-icon">
+                    {icon}
                 </div>
 
             </div>

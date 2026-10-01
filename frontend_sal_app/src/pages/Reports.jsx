@@ -1,84 +1,103 @@
-import { useEffect, useState } from "react";
-import EmployeeService from "../services/EmployeeService";
+import {
+    useEffect,
+    useState
+} from "react";
+
+import EmployeeService
+    from "../services/EmployeeService";
 
 function Reports() {
 
-    const [employees, setEmployees] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [employees, setEmployees] =
+        useState([]);
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState("");
+
 
     useEffect(() => {
 
-        EmployeeService.getAllEmployees()
-            .then((response) => {
-                setEmployees(response.data);
-                setLoading(false);
+        EmployeeService
+            .getAllEmployees()
+
+            .then(response => {
+                setEmployees(
+                    response.data
+                );
             })
-            .catch((error) => {
-                console.error("Error loading reports:", error);
-                setError("Unable to load report data.");
+
+            .catch(error => {
+
+                console.error(
+                    "Report error:",
+                    error
+                );
+
+                setError(
+                    "Unable to load report data."
+                );
+
+            })
+
+            .finally(() => {
                 setLoading(false);
             });
 
     }, []);
 
-    if (loading) {
-        return <p>Loading reports...</p>;
-    }
-
-    if (error) {
-        return (
-            <div className="alert alert-danger">
-                {error}
-            </div>
-        );
-    }
-
-    // Department Report
 
     const departmentReport = {};
 
-    employees.forEach((employee) => {
+    employees.forEach(employee => {
 
         const department =
-            employee.department || "Unknown";
+            employee.department
+            || "Unknown";
 
         if (!departmentReport[department]) {
-            departmentReport[department] = 0;
+
+            departmentReport[department] = {
+                count: 0
+            };
         }
 
-        departmentReport[department]++;
+        departmentReport[
+            department
+            ].count++;
     });
 
-    // Country Report
 
     const countryReport = {};
 
-    employees.forEach((employee) => {
+    employees.forEach(employee => {
 
         const country =
-            employee.country || "Unknown";
+            employee.country
+            || "Unknown";
 
-        if (!countryReport[country]) {
-            countryReport[country] = 0;
-        }
-
-        countryReport[country]++;
+        countryReport[country] =
+            (countryReport[country] || 0)
+            + 1;
     });
 
-    // Salary Report by Currency
 
     const salaryReport = {};
 
-    employees.forEach((employee) => {
+    employees.forEach(employee => {
 
         const currency =
-            employee.currency || "Unknown";
+            employee.currency
+            || "Unknown";
 
         const salary =
-            Number(employee.salary) || 0;
+            Number(employee.salary)
+            || 0;
 
         if (!salaryReport[currency]) {
+
             salaryReport[currency] = {
                 count: 0,
                 total: 0
@@ -86,168 +105,179 @@ function Reports() {
         }
 
         salaryReport[currency].count++;
-        salaryReport[currency].total += salary;
+
+        salaryReport[currency].total +=
+            salary;
     });
+
+
+    if (loading) {
+
+        return (
+            <div className="page-loading">
+
+                <div className="spinner-border text-primary" />
+
+                <p>
+                    Loading reports...
+                </p>
+
+            </div>
+        );
+    }
+
 
     return (
         <div>
 
-            <div className="mb-4">
-                <h2>Reports</h2>
+            <div className="page-heading">
 
-                <p className="text-muted">
+                <h2>
+                    Reports
+                </h2>
+
+                <p>
                     Employee and salary summary reports
                 </p>
-            </div>
-
-            {/* Department Report */}
-
-            <div className="card shadow-sm border-0 mb-4">
-
-                <div className="card-body">
-
-                    <h5 className="mb-3">
-                        Department Summary
-                    </h5>
-
-                    <div className="table-responsive">
-
-                        <table className="table table-hover">
-
-                            <thead className="table-dark">
-                            <tr>
-                                <th>Department</th>
-                                <th>Employees</th>
-                            </tr>
-                            </thead>
-
-                            <tbody>
-
-                            {Object.entries(
-                                departmentReport
-                            ).map(([department, count]) => (
-
-                                <tr key={department}>
-                                    <td>{department}</td>
-                                    <td>{count}</td>
-                                </tr>
-
-                            ))}
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
 
             </div>
 
-            {/* Country Report */}
 
-            <div className="card shadow-sm border-0 mb-4">
-
-                <div className="card-body">
-
-                    <h5 className="mb-3">
-                        Country Summary
-                    </h5>
-
-                    <div className="table-responsive">
-
-                        <table className="table table-hover">
-
-                            <thead className="table-dark">
-                            <tr>
-                                <th>Country</th>
-                                <th>Employees</th>
-                            </tr>
-                            </thead>
-
-                            <tbody>
-
-                            {Object.entries(
-                                countryReport
-                            ).map(([country, count]) => (
-
-                                <tr key={country}>
-                                    <td>{country}</td>
-                                    <td>{count}</td>
-                                </tr>
-
-                            ))}
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
+            {error && (
+                <div className="alert alert-danger">
+                    {error}
                 </div>
+            )}
 
-            </div>
 
-            {/* Salary Report */}
+            <ReportTable
+                title="Department Summary"
+                headers={[
+                    "Department",
+                    "Employees"
+                ]}
+                rows={
+                    Object.entries(
+                        departmentReport
+                    ).map(
+                        ([department, data]) => [
+                            department,
+                            data.count
+                        ]
+                    )
+                }
+            />
 
-            <div className="card shadow-sm border-0">
 
-                <div className="card-body">
+            <ReportTable
+                title="Country Summary"
+                headers={[
+                    "Country",
+                    "Employees"
+                ]}
+                rows={
+                    Object.entries(
+                        countryReport
+                    ).map(
+                        ([country, count]) => [
+                            country,
+                            count
+                        ]
+                    )
+                }
+            />
 
-                    <h5 className="mb-3">
-                        Salary Summary
-                    </h5>
 
-                    <div className="table-responsive">
+            <ReportTable
+                title="Salary Summary"
+                headers={[
+                    "Currency",
+                    "Employees",
+                    "Total Salary",
+                    "Average Salary"
+                ]}
+                rows={
+                    Object.entries(
+                        salaryReport
+                    ).map(
+                        ([currency, data]) => [
 
-                        <table className="table table-hover">
+                            currency,
 
-                            <thead className="table-dark">
+                            data.count,
 
-                            <tr>
-                                <th>Currency</th>
-                                <th>Employees</th>
-                                <th>Total Salary</th>
-                                <th>Average Salary</th>
+                            data.total
+                                .toLocaleString(),
+
+                            Math.round(
+                                data.total /
+                                data.count
+                            ).toLocaleString()
+
+                        ]
+                    )
+                }
+            />
+
+        </div>
+    );
+}
+
+
+function ReportTable({
+                         title,
+                         headers,
+                         rows
+                     }) {
+
+    return (
+        <div className="report-card mb-4">
+
+            <h5 className="mb-3">
+                {title}
+            </h5>
+
+            <div className="table-responsive">
+
+                <table className="table table-hover">
+
+                    <thead>
+
+                    <tr>
+
+                        {headers.map(header => (
+                            <th key={header}>
+                                {header}
+                            </th>
+                        ))}
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {rows.map(
+                        (row, rowIndex) => (
+
+                            <tr key={rowIndex}>
+
+                                {row.map(
+                                    (value, index) => (
+
+                                        <td key={index}>
+                                            {value}
+                                        </td>
+
+                                    ))}
+
                             </tr>
 
-                            </thead>
+                        ))}
 
-                            <tbody>
+                    </tbody>
 
-                            {Object.entries(
-                                salaryReport
-                            ).map(([currency, data]) => (
-
-                                <tr key={currency}>
-
-                                    <td>{currency}</td>
-
-                                    <td>
-                                        {data.count}
-                                    </td>
-
-                                    <td>
-                                        {data.total.toLocaleString()}
-                                    </td>
-
-                                    <td>
-                                        {Math.round(
-                                            data.total / data.count
-                                        ).toLocaleString()}
-                                    </td>
-
-                                </tr>
-
-                            ))}
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
+                </table>
 
             </div>
 

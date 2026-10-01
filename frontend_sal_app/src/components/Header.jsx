@@ -1,20 +1,21 @@
 import { useNavigate } from "react-router-dom";
+import AuthService from "../services/AuthService";
 
 function Header() {
 
     const navigate = useNavigate();
 
     const username =
-        localStorage.getItem("username") || "User";
+        localStorage.getItem("username")
+        || "User";
 
     const role =
-        localStorage.getItem("role") || "";
+        localStorage.getItem("role")
+        || "";
 
     const handleLogout = () => {
 
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
-        localStorage.removeItem("role");
+        AuthService.logout();
 
         navigate("/login");
     };
@@ -23,6 +24,7 @@ function Header() {
         <header className="app-header">
 
             <div>
+
                 <h5 className="mb-0">
                     Salary Management
                 </h5>
@@ -30,9 +32,10 @@ function Header() {
                 <small className="text-muted">
                     Employee Management Portal
                 </small>
+
             </div>
 
-            <div className="d-flex align-items-center gap-3">
+            <div className="header-user">
 
                 <div className="user-avatar">
                     {username
@@ -41,8 +44,15 @@ function Header() {
                 </div>
 
                 <div className="user-details">
-                    <strong>{username}</strong>
-                    <small>{role}</small>
+
+                    <strong>
+                        {username}
+                    </strong>
+
+                    <small>
+                        {role}
+                    </small>
+
                 </div>
 
                 <button
